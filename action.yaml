@@ -1,0 +1,50 @@
+name: "GitHub Issue Comment"
+author: "Mark Ferrell"
+description: "Add/Update a comment/report to a issue/pull-request from your workflow"
+
+branding:
+  icon: file-text
+  color: blue
+
+inputs:
+  issue:
+    description: "Issue/Pull-Request number to post to."
+    required: true
+  template:
+    description: "Post the contents of the named file as the comment to the PR. Supports Markdown."
+    required: true
+  id:
+    description: "Unique tracking ID used to track the comment w/in the issue/pull-request. This allows different comments/reports to be added/updated in the same issue/pull-request from different workflows."
+    required: true
+  artifacts:
+    description: "Add links to the listed artifacts.  Artifact format should be in the form of NAME@RUN_ID."
+    required: false
+  token:
+    description: "Access token to use when pulling artifacts and posting comments."
+    required: false
+  dry-run:
+    description: "Report what would be done but do not actually modify the target issue/pull-request."
+    required: true
+    default: false
+  debug:
+    description: "Enable execution debugging."
+    type: boolean
+    required: true
+    default: false
+
+runs:
+  using:  composite
+  steps:
+  - id: post
+    shell: bash
+    env:
+      GITHUB_TOKEN: ${{ inputs.token }}
+    run: |
+      : gh-comment-action
+      set -- --comment "${{ inputs.id }}"
+      for artifact in ${{ inputs.artifacts }}; do
+        set -- "${@}" --artifact "${artifact}"
+      done
+      test "${{ inputs.dry-run }}" = 'false' || set -- "${@}" --dry-run
+      test "${{ inputs.debug }}" = 'false' || set -- "${@}" --trace
+      "${{ github.action_path}}/gh-comment-action.sh" "${@}" "${inputs.template}" "${inputs.issue}"

@@ -1,0 +1,17 @@
+name: Pull Request
+
+on: [pull_request]
+
+jobs:
+  pull_request:
+    runs-on: ubuntu-latest
+    steps:
+    - debug:
+      if: ${{ secrets.ACTIONS_STEP_DEBUG }} != '' && ${{ secrets.ACTIONS_STEP_DEBUG }}
+      run: |
+        printf '##\n# Environ\n%s\n\n' "$(env | grep '^GITHUB_' | sort)"
+        printf '##\n# GitHub Event\n%s\n\n' "$(cat "${GITHUB_EVENT_PATH}")"
+
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v2
+    - uses: pre-commit/action@v2
