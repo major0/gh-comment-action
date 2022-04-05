@@ -1,0 +1,37 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.1.0
+  hooks:
+  - id: check-json
+  - id: check-merge-conflict
+  - id: check-toml
+  - id: check-xml
+  - id: check-yaml
+  - id: end-of-file-fixer
+  - id: mixed-line-ending
+    args: [--fix=no]
+  - id: pretty-format-json
+    args: ["--indent", "2", "--autofix"]
+  - id: trailing-whitespace
+    args: [--markdown-linebreak-ext=md]
+- repo: https://github.com/igorshubovych/markdownlint-cli
+  rev: v0.31.1
+  hooks:
+  - id: markdownlint
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.1.0
+  hooks:
+  - id: codespell
+# Enforce conventional commit message format
+# See: <https://www.conventionalcommits.org/en/v1.0.0/>
+- repo: https://github.com/commitizen-tools/commitizen
+  rev: v2.23.0
+  hooks:
+    - id: commitizen
+      stages: [commit-msg]
+- repo: https://github.com/detailyang/pre-commit-shell
+  rev: 1.0.5
+  hooks:
+  - id: shell-lint
