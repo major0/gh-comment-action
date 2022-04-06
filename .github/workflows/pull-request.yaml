@@ -17,3 +17,33 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v2
     - uses: pre-commit/action@v2.0.3
+
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - id: template
+      run: |
+        : Template File
+        cat>.comment.md<<END_OF_COMMENT
+        CI/CD Comment Test
+        | Issue | Submitter  |
+        |:-----:|------------|
+        |${{ github.event.pull_request.number }} | ${{ github.event.pull_request.user.login }} |
+        END_OF_COMMENT
+
+    - id: post
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        : Post Comment
+        sh gh-issue-comment.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
+
+    - id: update
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        : Update Comment
+        printf '\n:heavy_check_mark: Updated\n' >> '.comment.md'
+        sh gh-issue-comment.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
