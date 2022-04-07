@@ -26,12 +26,12 @@ jobs:
         echo "::set-output name=name::link-artifacts"
         echo "::set-output name=title::${GITHUB_WORKFLOW}"
         echo "::set-output name=url::https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-        echo "::set-output name=sha::${{ github.event.workflow_run.pull_requests[0].head_commit.id }}"
+        echo "::set-output name=sha::${{ github.event.workflow_run.pull_requests[0].head.sha }}"
 
     - id: checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.workflow_run.pull_requests[0].head.sha }}
+        ref: ${{ steps.check-data.outputs.sha }}
 
     - id: check-start
       run: |
