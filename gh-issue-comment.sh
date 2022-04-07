@@ -1,7 +1,11 @@
 #!/bin/sh
 
+set -e
+
 error() { echo "error: $*"; }
 die() { echo "error: $*"; exit 1;}
+lower() { printf '%s' "${*}" | tr '[:upper:]' '[:lower:]'; }
+upper() { printf '%s' "${*}" | tr '[:lower:]' '[:upper:]'; }
 count() { jq 'def count(s): reduce s as $_ (0;.+1); count(.[])'; }
 gh_event() { jq -r "$*" < "${GITHUB_EVENT_PATH}"; }
 
