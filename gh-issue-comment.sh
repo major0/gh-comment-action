@@ -30,6 +30,8 @@ artifact_links()
 		artifact_id="${artifact_ids%% *}"
 		artifact_name="${artifact_id%@*}"
 		artifact_run_id="${artifact_id#*@}"
+		artifact_ids="${artifact_ids#${artifact_id}}"
+		artifact_ids="${artifact_ids## }"
 
 		# Avoid duplicating links
 		for artifact_seen; do test "${artifact_seen}" != "${artifact_id}" || continue 2; done
