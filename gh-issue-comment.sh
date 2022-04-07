@@ -55,10 +55,10 @@ artifact_links()
 				echo "ERROR: no data for '${artifact_name}' in run ${artifact_run_id}"
 			else
 				printf '| [%s](%s) | %s | %s |' \
-					"$(printf '%s' "${artifact_data}" | jq '.name')" \
-					"$(printf '%s' "${artifact_data}" | jq '.archive_download_url')" \
-					"$(printf '%s' "${artifact_data}" | jq '.expires_at')" \
-					"$(printf '%s' "${artifact_data}" | jq '.size_in_bytes')"
+					"$(printf '%s' "${artifact_data}" | jq -r '.name')" \
+					"$(printf '%s' "${artifact_data}" | jq -r '.archive_download_url')" \
+					"$(printf '%s' "${artifact_data}" | jq -r '.expires_at')" \
+					"$(printf '%s' "${artifact_data}" | jq -r '.size_in_bytes')"
 			fi
 		fi
 
@@ -142,8 +142,8 @@ cat "${1}" > "${TMP_COMMENT}"
 if test -n "${ARTIFACT_IDS}";then
 	sed -e 's/^	//'>>"${TMP_COMMENT}"<<END_OF_COMMENT
 
-	| Artifact Name | Expiration Date | Size |
-	|:--------------|:---------------:|-----:|
+	| Artifact Name | Expiration Date | Bytes |
+	|:--------------|:---------------:|:------|
 	$(artifact_links "${ARTIFACT_IDS}")
 END_OF_COMMENT
 fi
