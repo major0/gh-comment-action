@@ -43,14 +43,14 @@ artifact_links()
 		artifact_run_data="$(gh api "repos/{owner}/{repo}/actions/runs/${artifact_run_id}/artifacts" --jq '.artifacts')"
 
 		if test "$(lower "${artifact_name}")" = 'all'; then
-			for entry in $(printf '%s' "${artifact_run_data}" | jq -r '.artifacts[].name'); do
+			for entry in $(printf '%s' "${artifact_run_data}" | jq -r '.[].name'); do
 				artifact_links "${entry}@${artifact_run_id}"
 				# Mark each artifact as seen
 				set -- "${@}" "${entry}@${artifact_run_id}"
 			done
 		else
-			artifact_query="$(printf '.artifacts[] | select(.name == "%s")' "${artifact_name}")"
-			artifact_data="$(printf '%s' "${artifact_data}" | jq -r "${artifact_query}")"
+			artifact_query="$(printf '.[] | select(.name == "%s")' "${artifact_name}")"
+			artifact_data="$(printf '%s' "${artifact_run_data}" | jq -r "${artifact_query}")"
 			if test -z "${artifact_data}"; then
 				echo "ERROR: no data for '${artifact_name}' in run ${artifact_run_id}"
 			else
