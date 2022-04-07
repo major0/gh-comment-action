@@ -1,0 +1,42 @@
+name: Link PR Artifacts
+
+on:
+  workflow_run:
+    workflows: ["Pull Request"]
+    types: [completed]
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+    - id: debug
+      run: |
+        : debugging
+        printf '##\n# Environ\n%s\n' "$(env | grep '^GITHUB_' | sort)"
+        printf '##\n# Event\n%s\n' "$(cat "${GITHUB_EVENT_PATH}")"
+
+  artifacts:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+    - id: checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.workflow_run.pull_requests[0].head.sha }}
+
+    - id: download
+      run: |
+        : Download comment template
+        gh run download "${{ github.event.workflow_run.id }}" -n comment
+
+    - id: artifacts
+      run: |
+        : Add artifact links
+        printf '\n:heavy_check_mark: Artifacts: %s\n' "$(date -u)" >> '.comment.md'
+        sh -x gh-issue-comment.sh \
+          --artifact "all@${{ github.event.workflow_run.id }}" \
+          --comment-id 'comment-test' \
+          '.comment.md' "${{ github.event.workflow_run.pull_requests[0].number }}"
