@@ -1,0 +1,81 @@
+name: Link PR Artifacts
+
+on:
+  workflow_run:
+    workflows: ["Pull Request"]
+    types: [completed]
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+    - id: debugging
+      run: |
+        : Debugging Data
+        printf '##\n# Environ\n%s\n' "$(env | grep '^GITHUB_' | sort)"
+        printf '##\n# Event\n%s\n' "$(cat "${GITHUB_EVENT_PATH}")"
+
+  artifacts:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+    - id: check-data
+      run: |
+        echo "::set-output name=started_at::$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "::set-output name=name::link-artifacts"
+        echo "::set-output name=title::${GITHUB_WORKFLOW}"
+        echo "::set-output name=url::https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        echo "::set-output name=sha::${{ github.event.workflow_run.pull_requests[0].head_commit.id }}"
+
+    - id: checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.workflow_run.pull_requests[0].head.sha }}
+
+    - id: check-start
+      run: |
+        : Start check
+        output="$(printf '{ "title": "%s" }' "${GITHUB_WORKFLOW}")"
+        body="$(printf '{ "status": "in_progress", "name": "%s", "details_url": "%s", "head_sha": "%s", "status": "in_progress", "output": %s }' \
+                "${{ steps.check-data.outputs.name }}" \
+                "${{ steps.check-data.outputs.url }}" \
+                "${{ steps.check-data.outputs.sha }}" \
+                "${output}")"
+        response="$(gh api -XPOST 'repos/{owner}/{repo}/check-runs' --field body="${body}")"
+        echo "::set-output name=id::$(printf '%s' "${response}" | jq -r '.id')"
+
+    - id: download
+      run: |
+        : Download comment template
+        gh run download "${{ github.event.workflow_run.id }}" -n comment
+
+    - id: artifacts
+      run: |
+        : Add artifact links
+        printf '\n:heavy_check_mark: Artifacts: %s\n' "$(date -u)" >> '.comment.md'
+        sh -x gh-issue-comment.sh \
+          --artifact "all@${{ github.event.workflow_run.id }}" \
+          --comment-id 'comment-test' \
+          '.comment.md' "${{ github.event.workflow_run.pull_requests[0].number }}"
+
+    - id: check-failure
+      if: ${{ failure() && !cancelled() }}
+      run: |
+        : Check Failed
+        body="$(printf '{ "status": "completed", "conclusion": "failed" }')"
+        gh api -XPATCH 'repos/{owner}/{repo}/check-runs ${{ steps.check-start.outputs.id }}' --field body="${body}"
+
+    - id: check-cancelled
+      if: cancelled()
+      run: |
+        : Check Cancelled
+        body="$(printf '{ "status": "completed", "conclusion": "cancelled" }')"
+        gh api -XPATCH 'repos/{owner}/{repo}/check-runs ${{ steps.check-start.outputs.id }}' --field body="${body}"
+
+    - id: check-success
+      if: success()
+      run: |
+        : Check Successful
+        body="$(printf '{ "status": "completed", "conclusion": "success" }')"
+        gh api -XPATCH 'repos/{owner}/{repo}/check-runs ${{ steps.check-start.outputs.id }}' --field body="${body}"
