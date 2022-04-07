@@ -43,7 +43,7 @@ artifact_links()
 		artifact_run_data="$(gh api "repos/{owner}/{repo}/actions/runs/${artifact_run_id}/artifacts" --jq '.artifacts')"
 
 		if test "$(lower "${artifact_name}")" = 'all'; then
-			for entry in $(printf '%s' "${artifact_run_data}" | jq -r '.artifacts[].name'); do
+			for entry in $(printf '%s' "${artifact_run_data}" | jq -r '.[].name'); do
 				artifact_links "${entry}@${artifact_run_id}"
 				# Mark each artifact as seen
 				set -- "${@}" "${entry}@${artifact_run_id}"
