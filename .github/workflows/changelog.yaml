@@ -38,11 +38,17 @@ jobs:
           : Post Changelog to Pull-Request
           sh gh-issue-comment.sh --comment-id 'changelog' 'CHANGELOG.md' "${{ github.event.pull_request.number }}"
 
-      - name: Temporarily disable branch protection
-        if: github.ref_protected
+      - id: settings
+        name: Temporarily disable branch protection
         env:
           GITHUB_TOKEN: ${{ secrets.AUTOMATION_REPO_TOKEN }}
-        run: gh api -XDELETE 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
+        run: |
+          if test "${{ github.ref_protected }}" = 'true'; then
+            gh api -XDELETE 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
+            echo '::set-output name=protected::true'
+          else
+            echo '::set-output name=protected::false'
+          fi
 
       - id: push-changelog
         if: github.ref_protected
@@ -60,7 +66,7 @@ jobs:
           git push
 
       - name: Enable branch protection
-        if: github.ref_protected && always() # Force to always run this step to ensure "include administrators" is always turned back on
+        if: ${{ steps.settings.outputs.protected == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.AUTOMATION_REPO_TOKEN }}
         run: gh api -XPOST 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
