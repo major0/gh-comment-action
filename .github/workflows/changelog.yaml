@@ -9,6 +9,15 @@ on:
     paths-ignore: ["CHANGELOG.md"]
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+    - id: debugging
+      run: |
+        : Debugging Data
+        printf '##\n# Environ\n%s\n' "$(env | grep '^GITHUB_' | sort)"
+        printf '##\n# Event\n%s\n' "$(cat "${GITHUB_EVENT_PATH}")"
+
   changelog:
     runs-on: ubuntu-latest
     steps:
@@ -44,16 +53,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTOMATION_REPO_TOKEN }}
         run: |
           if test "${{ github.ref_protected }}" = 'true'; then
-            gh api -XDELETE 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
             echo '::set-output name=protected::true'
+            printf '::set-output name=status_checks::%s' "$(gh api 'repos/{owner}/{repo}/branches/${github.ref_name}/protection/required_status_checks')"
+            #gh api -XDELETE 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
+            gh api -XPATCH 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection' --field 'enabled=false'
           else
             echo '::set-output name=protected::false'
           fi
 
       - id: push-changelog
-        if: github.ref_protected
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTOMATION_REPO_TOKEN }}
+        if: ${{ steps.settings.outputs.protected == 'true' }}
         run: |
           : Push Changelog
           set -e
@@ -66,7 +75,10 @@ jobs:
           git push
 
       - name: Enable branch protection
-        if: ${{ steps.settings.outputs.protected == 'true' }}
+        if: ${{ always() && steps.settings.outputs.protected == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.AUTOMATION_REPO_TOKEN }}
-        run: gh api -XPOST 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
+        run: |
+          #gh api -XPOST 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
+          gh api -XPATCH 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection' --field 'enabled=true'
+          gh api -XPATCH 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection' --field "required_status_checks=${{ steps.settings.outputs.required_status_checks }}"
