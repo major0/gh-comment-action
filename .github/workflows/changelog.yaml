@@ -46,8 +46,7 @@ jobs:
           : Disable branch protections
           gh api -XDELETE 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
 
-      - id: push-changelog
-        if: ${{ github.ref == "refs/heads/master" }}
+      - if: ${{ github.ref == 'refs/heads/master' }}
         run: |
           : Push Changelog
           set -e
