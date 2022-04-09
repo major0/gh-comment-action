@@ -1,0 +1,25 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v[1-9]+[0-9]?.[0-9]+.[0-9]+'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - id: github-release
+        run: |
+          : Generate Release
+          tag="${{ github.ref }}"
+          tag="${tag#refs/tags/}"
+          gh release create "${tag}" --generate-release
+          git tag -f "${tag%.*}"
+          latest="$(git tag -l --sort v:refname v[0-9]* | sed -E -n 's/^([[:digit:]]+\.[[:digit:]]+)\..*/\1/p' | tail -n 1)"
+          test "${tag%.*}" != "${latest}" || git tag -f "${tag%%.*}"
+          git push tags --force
