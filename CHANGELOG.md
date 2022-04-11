@@ -2,19 +2,7 @@
 
 ## [Unreleased](https://github.com/major0/gh-comment-action/tree/HEAD)
 
-[Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.1...HEAD)
-
-**Fixed bugs:**
-
-- Automated changelog blocking release workflow [\#48](https://github.com/major0/gh-comment-action/issues/48)
-
-**Closed issues:**
-
-- github.token cannot be used for automated release creation [\#46](https://github.com/major0/gh-comment-action/issues/46)
-
-## [v1.0.1](https://github.com/major0/gh-comment-action/tree/v1.0.1) (2022-04-11)
-
-[Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.0...v1.0.1)
+[Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.0...HEAD)
 
 **Implemented enhancements:**
 
@@ -34,6 +22,7 @@
 
 **Closed issues:**
 
+- github.token cannot be used for automated release creation [\#46](https://github.com/major0/gh-comment-action/issues/46)
 - Failing when running as a GitHub Action [\#40](https://github.com/major0/gh-comment-action/issues/40)
 
 ## [v1.0.0](https://github.com/major0/gh-comment-action/tree/v1.0.0) (2022-04-07)
