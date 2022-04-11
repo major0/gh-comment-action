@@ -39,7 +39,7 @@ jobs:
 
     - uses: major0/gh-artifact-cleanup@v1
       with:
-        #token: ${{ secrets.AUTOMATION }}
+        token: ${{ github.token }}
         newer: ${{ github.event.name == 'schedule' && 30 || github.event.inputs.newer }}
         older: ${{ github.event.name == 'schedule' && 14 || github.event.inputs.older }}
         dry-run: ${{ github.event.name ==  'schedule' && false || github.event.inputs.dry-run }}
