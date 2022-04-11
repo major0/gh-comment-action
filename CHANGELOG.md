@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Create release workflow [\#36](https://github.com/major0/gh-comment-action/issues/36)
 - Automatic Changelog Generation [\#23](https://github.com/major0/gh-comment-action/issues/23)
 - Automatic artifact cleanup [\#21](https://github.com/major0/gh-comment-action/issues/21)
 - Require PR's to resolve known issues [\#19](https://github.com/major0/gh-comment-action/issues/19)
