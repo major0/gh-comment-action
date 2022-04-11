@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.1...HEAD)
 
+**Fixed bugs:**
+
+- Automated changelog blocking release workflow [\#48](https://github.com/major0/gh-comment-action/issues/48)
+
 **Closed issues:**
 
 - github.token cannot be used for automated release creation [\#46](https://github.com/major0/gh-comment-action/issues/46)
