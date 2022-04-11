@@ -1,13 +1,9 @@
 name: Release
 
 on:
-  pull_request:
   push:
     tags:
       - 'v[1-9]+[0-9]?.[0-9]+.[0-9]+'
-    branches:
-      - master
-    paths-ignore: ["CHANGELOG.md"]
 
 jobs:
   changelog:
@@ -15,8 +11,6 @@ jobs:
     steps:
       - name: "📥 Check-out"
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.AUTOMATION_REPO_TOKEN }}
 
       - name: "✏️ Generate release changelog"
         uses: heinrichreimer/action-github-changelog-generator@v2.3
@@ -33,23 +27,13 @@ jobs:
           issuesWoLabels: true
           addSections: '{"documentation":{"prefix":"**Documentation:**","labels":["documentation"]}}'
 
-      - id: comment
-        if: ${{ github.event.pull_request }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          : Post Changelog to Pull-Request
-          sh gh-issue-comment.sh --comment-id 'changelog' 'CHANGELOG.md' "${{ github.event.pull_request.number }}"
-
       - id: release
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
           body_path: CHANGELOG.md
           token: ${{ secrets.RELEASE_TOKEN }}
 
       - id: tag
-        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           : Generate Short Tags
           tag="${{ github.ref }}"
@@ -58,29 +42,3 @@ jobs:
           latest="$(git tag -l --sort v:refname v[0-9]* | sed -E -n 's/^([[:digit:]]+\.[[:digit:]]+)\..*/\1/p' | tail -n 1)"
           test "${tag%.*}" != "${latest}" || git tag -f "${tag%%.*}"
           git push tags --force
-
-      - if: ${{ github.ref_protected }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTOMATION_REPO_TOKEN }}
-        run: |
-          : Disable branch protections
-          gh api -XDELETE 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
-
-      - if: ${{ github.ref == 'refs/heads/master' }}
-        run: |
-          : Push Changelog
-          set -e
-          git config user.name 'Automatic Changelog'
-          git config user.email '<github-actions@users.noreply.github.com>'
-          tac CHANGELOG.md | awk 'NF {p=1} p' | tac > CHANGELOG.new
-          mv CHANGELOG.new CHANGELOG.md
-          git add CHANGELOG.md
-          git commit -m 'Update Changelog' || :
-          git push
-
-      - if: ${{ always() && github.ref_protected }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.AUTOMATION_REPO_TOKEN }}
-        run: |
-          : Enable branch protections
-          gh api -XPOST 'repos/{owner}/{repo}/branches/${{ github.ref_name }}/protection/enforce_admins'
