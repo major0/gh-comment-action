@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/major0/gh-comment-action/tree/HEAD)
 
-[Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.0...HEAD)
+[Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.1...HEAD)
+
+**Closed issues:**
+
+- github.token cannot be used for automated release creation [\#46](https://github.com/major0/gh-comment-action/issues/46)
+
+## [v1.0.1](https://github.com/major0/gh-comment-action/tree/v1.0.1) (2022-04-11)
+
+[Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.0...v1.0.1)
 
 **Implemented enhancements:**
 
