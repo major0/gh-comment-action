@@ -47,4 +47,4 @@ runs:
       done
       test "${{ inputs.dry-run }}" = 'false' || set -- "${@}" --dry-run
       test "${{ inputs.debug }}" = 'false' || set -- "${@}" --trace
-      "${{ github.action_path}}/gh-comment-action.sh" "${@}" "${inputs.template}" "${inputs.issue}"
+      "${{ github.action_path}}/gh-comment-action.sh" "${@}" "${{ inputs.template }}" "${{ inputs.issue }}"
