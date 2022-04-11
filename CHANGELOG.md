@@ -13,6 +13,7 @@
 
 **Fixed bugs:**
 
+- release workflow failing due to lack of auth token [\#44](https://github.com/major0/gh-comment-action/issues/44)
 - Release workflow failing [\#42](https://github.com/major0/gh-comment-action/issues/42)
 - artifact cleanup workflow failing to run [\#38](https://github.com/major0/gh-comment-action/issues/38)
 - Removed unused sources [\#34](https://github.com/major0/gh-comment-action/issues/34)
