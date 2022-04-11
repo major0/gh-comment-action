@@ -13,6 +13,7 @@
 
 **Fixed bugs:**
 
+- artifact cleanup workflow failing to run [\#38](https://github.com/major0/gh-comment-action/issues/38)
 - Removed unused sources [\#34](https://github.com/major0/gh-comment-action/issues/34)
 - Automatic Changelog failing on updates to master [\#27](https://github.com/major0/gh-comment-action/issues/27)
 - The codespell pre-commit hook is failing `pullRequests` directive in. [\#24](https://github.com/major0/gh-comment-action/issues/24)
