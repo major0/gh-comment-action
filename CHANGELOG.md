@@ -13,6 +13,8 @@
 
 **Fixed bugs:**
 
+- Syntax error when pushing release tags [\#51](https://github.com/major0/gh-comment-action/issues/51)
+- Automated changelog blocking release workflow [\#48](https://github.com/major0/gh-comment-action/issues/48)
 - release workflow failing due to lack of auth token [\#44](https://github.com/major0/gh-comment-action/issues/44)
 - Release workflow failing [\#42](https://github.com/major0/gh-comment-action/issues/42)
 - artifact cleanup workflow failing to run [\#38](https://github.com/major0/gh-comment-action/issues/38)
