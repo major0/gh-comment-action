@@ -2,6 +2,9 @@ name: Pull Request
 
 on: [pull_request]
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
@@ -26,16 +29,12 @@ jobs:
         END_OF_COMMENT
 
     - id: post
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
       run: |
         : Post Comment
         printf '\n:heavy_check_mark: Posted: %s\n' "$(date -u)" >> '.comment.md'
         sh gh-comment-action.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
 
     - id: update
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
       run: |
         : Update Comment
         printf '\n:heavy_check_mark: Updated: %s\n' "$(date -u)" >> '.comment.md'
@@ -54,11 +53,12 @@ jobs:
     - uses: actions/checkout@v3
 
     - id: issue-resolution
+      shell: sh
       run: |
         : Validate commit is resolving an issue
-        die() { echo "$*" >&2; exit 1; }
+        die() { echo "::error:: $*"; exit 1; }
         set -- $(gh api "repos/{owner}/{repo}/pulls/${{ github.event.pull_request.number }}/commits" --jq '.[].sha')
-        git fetch --deepen=${#}
+        git fetch "--deepen=${#}" || :
         for sha; do
           git show -s --format='%s%n%n%b' "${sha}" > '/tmp/git-commit-message.log'
           title="$(grep -Pzo '^.+(?=\n\n)' < '/tmp/git-commit-message.log')"
@@ -87,24 +87,25 @@ jobs:
     - uses: actions/checkout@v3
 
     - id: issue-status
+      shell: sh
       run: |
         : Validate closed issues are in an open state
-        die() { echo "$*" >&2; exit 1; }
+        die() { echo "::error:: $*"; exit 1; }
         set -- $(gh api "repos/{owner}/{repo}/pulls/${{ github.event.pull_request.number }}/commits" --jq '.[].sha')
-        git fetch --deepen=${#}
+        git fetch --deepen=${#} || :
         for sha; do
           git show -s --format='%s%n%n%b' "${sha}" > '/tmp/git-commit-message.log'
           footer="$(grep -Pzo '(?<=\n\n).+$' '/tmp/git-commit-message.log')"
           test -n "${footer}" || die 'missing commit message footer'
           footer="$(printf '%s' "${footer}" | sed -e 's,#,,g' -e 's/,/ /g')"
           set --
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P 'grep -Poz '(?<=[Ff]ixe[sd]:\s).+')
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P 'grep -Poz '(?<=[Ff]ix:\s).+')
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P 'grep -Poz '(?<=Close:\s).+')
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P 'grep -Poz '(?<=Close[sd]:\s).+')
+          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=[Ff]ixe[sd]:\s).+')
+          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=[Ff]ix:\s).+')
+          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=Close:\s).+')
+          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=Close[sd]:\s).+')
           unset footer
           for issue; do
-            state="gh api "repos/{owner}/{repo}/issues/${issue}" --jq '.state'> /dev/null 2>&1)"
+            state="$(gh api "repos/{owner}/{repo}/issues/${issue}" --jq '.state'> /dev/null 2>&1)"
             test -n "${state}" || die "invalid issue '${issue}'"
             test "${state}" = 'open' || die "issue '${issue}' already closed"
           done
