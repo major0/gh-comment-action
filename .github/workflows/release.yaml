@@ -40,4 +40,4 @@ jobs:
           git tag -f "${tag%.*}"
           latest="$(git tag -l --sort v:refname v[0-9]* | sed -E -n 's/^([[:digit:]]+\.[[:digit:]]+)\..*/\1/p' | tail -n 1)"
           test "${tag%.*}" != "${latest}" || git tag -f "${tag%%.*}"
-          git push tags --force
+          git push --tags --force
