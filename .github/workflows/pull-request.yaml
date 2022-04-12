@@ -57,26 +57,29 @@ jobs:
       run: |
         : Validate commit is resolving an issue
         die() { echo "::error:: $*"; exit 1; }
+        commit_log='/tmp/git-commit-message.log'
         set -- $(gh api "repos/{owner}/{repo}/pulls/${{ github.event.pull_request.number }}/commits" --jq '.[].sha')
         git fetch "--deepen=${#}" || :
         for sha; do
-          git show -s --format='%s%n%n%b' "${sha}" > '/tmp/git-commit-message.log'
-          title="$(grep -Pzo '^.+(?=\n\n)' < '/tmp/git-commit-message.log')"
-          type="$(printf '%s' "${title}" | grep -P '^\S+(?=:)')"
-          test -n "${type}" || die "${sha}: title missing 'type:' prefix"
+          # Passing through `tac` twice will strip trailing newlines
+          echo "$(echo "$(git show -s --format='%s%n%n%b' "${sha}" | tac)" | tac)" > "${commit_log}"
+          title="$(head -n 1 < "${commit_log}")"
+          message="$(tail -n +2 < "${commit_log}")"
+          type="$(printf '%s' "${title}" | awk -F ':' '{print$1}')"
+          test -n "${type}" || die "${sha}: title missing 'type' prefix"
           case "${type}" in
           (fix|hotfix)  type='fix';;
           (*)           type='close';;
           esac
-          footer="$(grep -Pzo '(?<=\n\n).+$' < '/tmp/git-commit-message.log')"
-          test -n "${footer}" || die 'missing commit message footer'
-          for resolution in $(printf '%s' "${footer}" | grep -P '(Fix(e[sd])?|Close[sd]?)(?=:.*)'); do
+          footer="$(echo "$(echo "${message}" | tac | grep -B9000 -m1 '^$' | tac)" | grep -v '^$')"
+          test -n "${footer}" || die "${sha}: missing commit message footer"
+          for resolution in $(printf '%s' "${footer}" | awk -F ':' '/^(Fix(e[sd])?|Close[sd]?)/{print$1}'); do
             case "${resolution}" in
             ([Ff]ix|[Ff]ixe[sd]) resolution='fix';;
             ([Cc]lose[sd]?)      resolution='close';;
-            (*)                  die 'no valid issue resolution found in commit message footer';;
+            (*)                  die "${sha}: no valid issue resolution found in commit message footer";;
             esac
-            test "${type}" = "${resolution}" || die "invalid resolution type for '${type}'"
+            test "${type}" = "${resolution}" || die "${sha}: invalid resolution type '${type}'"
           done
         done
 
@@ -90,23 +93,25 @@ jobs:
       shell: sh
       run: |
         : Validate closed issues are in an open state
+        commit_log='/tmp/git-commit-message.log'
         die() { echo "::error:: $*"; exit 1; }
         set -- $(gh api "repos/{owner}/{repo}/pulls/${{ github.event.pull_request.number }}/commits" --jq '.[].sha')
         git fetch --deepen=${#} || :
         for sha; do
-          git show -s --format='%s%n%n%b' "${sha}" > '/tmp/git-commit-message.log'
-          footer="$(grep -Pzo '(?<=\n\n).+$' '/tmp/git-commit-message.log')"
-          test -n "${footer}" || die 'missing commit message footer'
+          # Passing through `tac` twice will strip trailing newlines
+          echo "$(echo "$(git show -s --format='%s%n%n%b' "${sha}" | tac)" | tac)" > "${commit_log}"
+          message="$(tail -n +2 < "${commit_log}")"
+          footer="$(echo "$(echo "${message}" | tac | grep -B9000 -m1 '^$' | tac)" | grep -v '^$')"
+          test -n "${footer}" || die "${sha}: missing commit message footer"
           footer="$(printf '%s' "${footer}" | sed -e 's,#,,g' -e 's/,/ /g')"
           set --
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=[Ff]ixe[sd]:\s).+')
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=[Ff]ix:\s).+')
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=Close:\s).+')
-          set -- "${@}" $(printf '%s' "${footer}" | grep -P '(?<=Close[sd]:\s).+')
-          unset footer
+          set -- "${@}" $(printf '%s' "${footer}" | grep -Po '(?<=[Ff]ixe[sd]:\s).+')
+          set -- "${@}" $(printf '%s' "${footer}" | grep -Po '(?<=[Ff]ix:\s).+')
+          set -- "${@}" $(printf '%s' "${footer}" | grep -Po '(?<=Close:\s).+')
+          set -- "${@}" $(printf '%s' "${footer}" | grep -Po '(?<=Close[sd]:\s).+')
           for issue; do
-            state="$(gh api "repos/{owner}/{repo}/issues/${issue}" --jq '.state'> /dev/null 2>&1)"
-            test -n "${state}" || die "invalid issue '${issue}'"
-            test "${state}" = 'open' || die "issue '${issue}' already closed"
+            state="$(gh api "repos/{owner}/{repo}/issues/${issue}" --jq '.state' 2> /dev/null)"
+            test -n "${state}" || die "${sha}: invalid issue '${issue}'"
+            test "${state}" = 'open' || die "${sha}: issue '${issue}' already closed"
           done
         done
