@@ -2,6 +2,9 @@ name: Pull Request
 
 on: [pull_request]
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
@@ -26,16 +29,12 @@ jobs:
         END_OF_COMMENT
 
     - id: post
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
       run: |
         : Post Comment
         printf '\n:heavy_check_mark: Posted: %s\n' "$(date -u)" >> '.comment.md'
         sh gh-comment-action.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
 
     - id: update
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
       run: |
         : Update Comment
         printf '\n:heavy_check_mark: Updated: %s\n' "$(date -u)" >> '.comment.md'
@@ -57,10 +56,13 @@ jobs:
       run: |
         : Validate commit is resolving an issue
         die() { echo "$*" >&2; exit 1; }
+        set -x
         set -- $(gh api "repos/{owner}/{repo}/pulls/${{ github.event.pull_request.number }}/commits" --jq '.[].sha')
         git fetch --deepen=${#}
         for sha; do
           git show -s --format='%s%n%n%b' "${sha}" > '/tmp/git-commit-message.log'
+          printf '##\n# git-commit-message\n'
+          cat '/tmp/git-commit-message.log'
           title="$(grep -Pzo '^.+(?=\n\n)' < '/tmp/git-commit-message.log')"
           type="$(printf '%s' "${title}" | grep -P '^\S+(?=:)')"
           test -n "${type}" || die "${sha}: title missing 'type:' prefix"
