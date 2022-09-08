@@ -34,7 +34,7 @@ artifact_links()
 		artifact_id="${artifact_ids%% *}"
 		artifact_name="${artifact_id%@*}"
 		artifact_run_id="${artifact_id#*@}"
-		artifact_ids="${artifact_ids#${artifact_id}}"
+		artifact_ids="${artifact_ids#"${artifact_id}"}"
 		artifact_ids="${artifact_ids## }"
 
 		# Avoid duplicating links
@@ -138,7 +138,7 @@ else
 fi
 COMMENT_LINK="$(comment_link "${COMMENT_ID}" "${ISSUE_ID}")"
 
-TMP_COMMENT='/tmp/gh-issue-comment.md'
+TMP_COMMENT='/tmp/gh-comment-action.md'
 cleanup() { rm -f "${TMP_COMMENT}"; }
 trap cleanup 0 EXIT
 cat "${1}" > "${TMP_COMMENT}"

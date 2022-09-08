@@ -31,7 +31,7 @@ jobs:
       run: |
         : Post Comment
         printf '\n:heavy_check_mark: Posted: %s\n' "$(date -u)" >> '.comment.md'
-        sh gh-issue-comment.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
+        sh gh-comment-action.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
 
     - id: update
       env:
@@ -39,7 +39,7 @@ jobs:
       run: |
         : Update Comment
         printf '\n:heavy_check_mark: Updated: %s\n' "$(date -u)" >> '.comment.md'
-        sh gh-issue-comment.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
+        sh gh-comment-action.sh --comment-id 'comment-test' '.comment.md' "${{ github.event.pull_request.number }}"
 
     - id: upload
       uses: actions/upload-artifact@v3

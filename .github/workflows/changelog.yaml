@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           : Post Changelog to Pull-Request
-          sh gh-issue-comment.sh --comment-id 'changelog' 'CHANGELOG.md' "${{ github.event.pull_request.number }}"
+          sh gh-comment-action.sh --comment-id 'changelog' 'CHANGELOG.md' "${{ github.event.pull_request.number }}"
 
       - if: ${{ github.ref_protected }}
         env:
