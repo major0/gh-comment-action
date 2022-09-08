@@ -7,6 +7,7 @@
 **Fixed bugs:**
 
 - No such file or directory. [\#58](https://github.com/major0/gh-comment-action/issues/58)
+- Not all calls to `gh` CLI are authenticated in PR workflow [\#56](https://github.com/major0/gh-comment-action/issues/56)
 - short-short version tagging failing [\#53](https://github.com/major0/gh-comment-action/issues/53)
 
 ## [v1.0.1](https://github.com/major0/gh-comment-action/tree/v1.0.1) (2022-04-12)
