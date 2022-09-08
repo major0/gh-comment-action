@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased](https://github.com/major0/gh-comment-action/tree/HEAD)
+
+[Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.1...HEAD)
+
+**Fixed bugs:**
+
+- No such file or directory. [\#58](https://github.com/major0/gh-comment-action/issues/58)
+- short-short version tagging failing [\#53](https://github.com/major0/gh-comment-action/issues/53)
+
 ## [v1.0.1](https://github.com/major0/gh-comment-action/tree/v1.0.1) (2022-04-12)
 
 [Full Changelog](https://github.com/major0/gh-comment-action/compare/v1.0.0...v1.0.1)
@@ -15,17 +24,14 @@
 
 - Syntax error when pushing release tags [\#51](https://github.com/major0/gh-comment-action/issues/51)
 - Automated changelog blocking release workflow [\#48](https://github.com/major0/gh-comment-action/issues/48)
+- github.token cannot be used for automated release creation [\#46](https://github.com/major0/gh-comment-action/issues/46)
 - release workflow failing due to lack of auth token [\#44](https://github.com/major0/gh-comment-action/issues/44)
 - Release workflow failing [\#42](https://github.com/major0/gh-comment-action/issues/42)
+- Failing when running as a GitHub Action [\#40](https://github.com/major0/gh-comment-action/issues/40)
 - artifact cleanup workflow failing to run [\#38](https://github.com/major0/gh-comment-action/issues/38)
 - Removed unused sources [\#34](https://github.com/major0/gh-comment-action/issues/34)
 - Automatic Changelog failing on updates to master [\#27](https://github.com/major0/gh-comment-action/issues/27)
 - The codespell pre-commit hook is failing `pullRequests` directive in. [\#24](https://github.com/major0/gh-comment-action/issues/24)
-
-**Closed issues:**
-
-- github.token cannot be used for automated release creation [\#46](https://github.com/major0/gh-comment-action/issues/46)
-- Failing when running as a GitHub Action [\#40](https://github.com/major0/gh-comment-action/issues/40)
 
 ## [v1.0.0](https://github.com/major0/gh-comment-action/tree/v1.0.0) (2022-04-07)
 
